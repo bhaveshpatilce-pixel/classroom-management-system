@@ -140,6 +140,8 @@ function toggleAuth(mode) {
     document.getElementById('signupForm').style.display = mode === 'signup' ? '' : 'none';
 }
 
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
 async function handleSignup(e) {
     e.preventDefault();
     const name = document.getElementById('signupName').value.trim();
@@ -148,7 +150,9 @@ async function handleSignup(e) {
     const role = document.querySelector('input[name="signupRole"]:checked').value;
 
     if (!name || !email || !password) return showToast('All fields are required.', 'error');
-    
+    if (!EMAIL_REGEX.test(email)) return showToast('Please enter a valid email address.', 'error');
+    if (password.length < 6) return showToast('Password must be at least 6 characters.', 'error');
+
     try {
         const data = await apiFetch('/auth/signup', {
             method: 'POST',
@@ -166,6 +170,9 @@ async function handleLogin(e) {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value.trim();
     const password = document.getElementById('loginPassword').value;
+
+    if (!email || !password) return showToast('Email and password are required.', 'error');
+    if (!EMAIL_REGEX.test(email)) return showToast('Please enter a valid email address.', 'error');
 
     try {
         const data = await apiFetch('/auth/login', {
@@ -833,11 +840,21 @@ async function exportCSV() {
 //  INIT
 // ══════════════════════════════════════════
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const session = getSession();
-    if (session) {
-        enterApp();
+    const token = sessionStorage.getItem('lms_token');
+
+    if (session && token) {
+        // Verify token with backend — don't trust sessionStorage blindly
+        try {
+            await apiFetch('/auth/me'); // throws if token invalid/expired
+            enterApp();
+        } catch {
+            clearSession();
+            toggleAuth('login');
+        }
     } else {
+        clearSession();
         toggleAuth('login');
     }
 

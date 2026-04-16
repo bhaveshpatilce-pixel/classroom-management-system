@@ -1,5 +1,12 @@
+# Dependencies
 node_modules/
+
+# Environment variables
 .env
+
+# Logs
 *.log
-backend/java/*.class
-package-lock.json
+
+# OS artifacts
+.DS_Store
+Thumbs.db
