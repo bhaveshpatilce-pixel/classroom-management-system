@@ -1,35 +1,40 @@
+'use strict';
+
 const mongoose = require('mongoose');
 
 const submissionSchema = new mongoose.Schema(
   {
     assignmentId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Assignment',
+      type:     mongoose.Schema.Types.ObjectId,
+      ref:      'Assignment',
       required: true,
     },
     studentId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'User',
+      type:     mongoose.Schema.Types.ObjectId,
+      ref:      'User',
       required: true,
     },
     studentName: {
-      type: String,
+      type:     String,
       required: true,
+      trim:     true,
     },
     content: {
-      type: String,
+      type:     String,
       required: [true, 'Submission content is required'],
+      trim:     true,
     },
     marks: {
-      type: Number,
+      type:    Number,
       default: null,
     },
     feedback: {
-      type: String,
+      type:    String,
       default: '',
+      trim:    true,
     },
     gradedAt: {
-      type: Date,
+      type:    Date,
       default: null,
     },
   },

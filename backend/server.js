@@ -1,54 +1,55 @@
-const express = require('express');
-const cors = require('cors');
-const helmet = require('helmet');
-const dotenv = require('dotenv');
+'use strict';
+
+const express  = require('express');
+const path     = require('path');
+const cors     = require('cors');
+const helmet   = require('helmet');
+const dotenv   = require('dotenv');
+
 const connectDB = require('./config/db');
 
-// Load environment variables
+// ── Environment ────────────────────────────────────────────────────────────────
 dotenv.config();
 
-// Initialize Express
+// ── App ────────────────────────────────────────────────────────────────────────
 const app = express();
 
-// ── Middleware ──────────────────────────────
-app.use(helmet({
-  contentSecurityPolicy: false, // Disable for easier dev/deploy if using external assets
-}));
+// ── Middleware ─────────────────────────────────────────────────────────────────
+app.use(helmet({ contentSecurityPolicy: false }));
 app.use(cors());
 app.use(express.json());
 
-// Serve Static Frontend Files
-const path = require('path');
+// ── Static Frontend ────────────────────────────────────────────────────────────
 app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
-// ── API Routes ─────────────────────────────
-app.use('/api/auth', require('./routes/auth'));
-app.use('/api/courses', require('./routes/courses'));
-app.use('/api/assignments', require('./routes/assignments'));
-app.use('/api/submissions', require('./routes/submissions'));
+// ── API Routes ─────────────────────────────────────────────────────────────────
+app.use('/api/auth',          require('./routes/auth'));
+app.use('/api/courses',       require('./routes/courses'));
+app.use('/api/assignments',   require('./routes/assignments'));
+app.use('/api/submissions',   require('./routes/submissions'));
 app.use('/api/announcements', require('./routes/announcements'));
 
-// ── Fallback to Frontend index.html ────────────────
-app.get('*', (req, res) => {
+// ── SPA Fallback ───────────────────────────────────────────────────────────────
+app.use((req, res) => {
   if (!req.path.startsWith('/api')) {
     res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html'));
   } else {
-    res.status(404).json({ message: 'API Route not found.' });
+    res.status(404).json({ message: 'API route not found.' });
   }
 });
 
-// ── Error Handler ──────────────────────────
-app.use((err, req, res, next) => {
+// ── Global Error Handler ───────────────────────────────────────────────────────
+app.use((err, req, res, next) => { // eslint-disable-line no-unused-vars
   console.error('Unhandled error:', err.stack);
   res.status(500).json({ message: 'Internal server error.' });
 });
 
-// ── Start Server ───────────────────────────
+// ── Start ──────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
 
 connectDB().then(() => {
   app.listen(PORT, () => {
-    console.log(`\n🚀 Server running on port ${PORT}`);
-    console.log(`📡 API Base: http://localhost:${PORT}/api\n`);
+    console.log(`🚀  Server running on http://localhost:${PORT}`);
+    console.log(`📡  API base:         http://localhost:${PORT}/api`);
   });
 });

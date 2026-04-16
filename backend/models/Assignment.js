@@ -1,30 +1,32 @@
+'use strict';
+
 const mongoose = require('mongoose');
 
 const assignmentSchema = new mongoose.Schema(
   {
     courseId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Course',
+      type:     mongoose.Schema.Types.ObjectId,
+      ref:      'Course',
       required: true,
     },
     title: {
-      type: String,
+      type:     String,
       required: [true, 'Assignment title is required'],
-      trim: true,
+      trim:     true,
     },
     description: {
-      type: String,
+      type:     String,
       required: [true, 'Assignment description is required'],
-      trim: true,
+      trim:     true,
     },
     deadline: {
-      type: Date,
+      type:     Date,
       required: [true, 'Deadline is required'],
     },
     totalMarks: {
-      type: Number,
+      type:     Number,
       required: [true, 'Total marks is required'],
-      min: 1,
+      min:      1,
     },
   },
   { timestamps: true }
