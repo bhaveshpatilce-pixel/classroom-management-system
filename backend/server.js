@@ -19,7 +19,7 @@ app.use(express.json());
 
 // Serve Static Frontend Files
 const path = require('path');
-app.use(express.static(path.join(__dirname, 'public')));
+app.use(express.static(path.join(__dirname, '..', 'frontend')));
 
 // ── API Routes ─────────────────────────────
 app.use('/api/auth', require('./routes/auth'));
@@ -31,7 +31,7 @@ app.use('/api/announcements', require('./routes/announcements'));
 // ── Fallback to Frontend index.html ────────────────
 app.get('*', (req, res) => {
   if (!req.path.startsWith('/api')) {
-    res.sendFile(path.join(__dirname, 'public', 'index.html'));
+    res.sendFile(path.join(__dirname, '..', 'frontend', 'index.html'));
   } else {
     res.status(404).json({ message: 'API Route not found.' });
   }
