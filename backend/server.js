@@ -29,6 +29,8 @@ app.use('/api/assignments',   require('./routes/assignments'));
 app.use('/api/submissions',   require('./routes/submissions'));
 app.use('/api/announcements', require('./routes/announcements'));
 
+app.get('/api/ping', (req, res) => res.status(200).json({ status: 'ok' }));
+
 // ── SPA Fallback ───────────────────────────────────────────────────────────────
 app.use((req, res) => {
   if (!req.path.startsWith('/api')) {
@@ -51,5 +53,18 @@ connectDB().then(() => {
   app.listen(PORT, () => {
     console.log(`🚀  Server running on http://localhost:${PORT}`);
     console.log(`📡  API base:         http://localhost:${PORT}/api`);
+    
+    // Self-ping to prevent Render sleep mode
+    const RENDER_EXTERNAL_URL = process.env.RENDER_EXTERNAL_URL;
+    if (RENDER_EXTERNAL_URL) {
+      console.log(`⏰  Keep-alive enabled for ${RENDER_EXTERNAL_URL}`);
+      // Ping every 14 minutes (Render sleeps after 15 mins of inactivity)
+      setInterval(() => {
+        const pingUrl = `${RENDER_EXTERNAL_URL}/api/ping`; 
+        fetch(pingUrl)
+          .then(res => console.log(`[Keep-Alive] Pinged ${pingUrl} - Status: ${res.status}`))
+          .catch(err => console.error(`[Keep-Alive] Ping failed:`, err.message));
+      }, 14 * 60 * 1000);
+    }
   });
 });
