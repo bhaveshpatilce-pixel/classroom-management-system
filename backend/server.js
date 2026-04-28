@@ -9,7 +9,7 @@ const dotenv   = require('dotenv');
 const connectDB = require('./config/db');
 
 // ── Environment ────────────────────────────────────────────────────────────────
-dotenv.config();
+dotenv.config({ path: path.join(__dirname, '..', '.env') });
 
 // ── App ────────────────────────────────────────────────────────────────────────
 const app = express();
@@ -28,6 +28,11 @@ app.use('/api/courses',       require('./routes/courses'));
 app.use('/api/assignments',   require('./routes/assignments'));
 app.use('/api/submissions',   require('./routes/submissions'));
 app.use('/api/announcements', require('./routes/announcements'));
+
+// Keep-alive route for Render
+app.get('/api/ping', (req, res) => {
+  res.status(200).json({ message: 'pong' });
+});
 
 // ── SPA Fallback ───────────────────────────────────────────────────────────────
 app.use((req, res) => {
@@ -51,5 +56,23 @@ connectDB().then(() => {
   app.listen(PORT, () => {
     console.log(`🚀  Server running on http://localhost:${PORT}`);
     console.log(`📡  API base:         http://localhost:${PORT}/api`);
+    
+    // ── Keep-Alive Ping ────────────────────────────────────────────────────────
+    // Pings the server every 14 minutes to prevent Render from sleeping
+    const RENDER_EXTERNAL_URL = process.env.RENDER_EXTERNAL_URL;
+    if (RENDER_EXTERNAL_URL) {
+      const https = require('https');
+      setInterval(() => {
+        https.get(`${RENDER_EXTERNAL_URL}/api/ping`, (resp) => {
+          if (resp.statusCode === 200) {
+            console.log('✅  Keep-alive ping successful');
+          } else {
+            console.error('❌  Keep-alive ping failed', resp.statusCode);
+          }
+        }).on('error', (err) => {
+          console.error('❌  Keep-alive ping error:', err.message);
+        });
+      }, 14 * 60 * 1000); // 14 minutes
+    }
   });
 });
